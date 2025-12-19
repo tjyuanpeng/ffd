@@ -1,0 +1,57 @@
+{
+  "name": "ffd",
+  "displayName": "ffd",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Falconix Frontend Developer Toolkit",
+  "author": "tjyuanpeng@gmail.com",
+  "license": "MIT",
+  "homepage": "https://github.com/tjyuanpeng/ffd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjyuanpeng/ffd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tjyuanpeng/ffd/issues"
+  },
+  "keywords": [
+    "chrome-extension",
+    "falconix",
+    "frontend",
+    "developer",
+    "micro-app"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "fmt": "prettier --write '**/*.{vue,ts,json,css,scss,md}'",
+    "zip": "npm run build && node src/zip.js",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.2.6",
+    "unplugin-vue-components": "^30.0.0",
+    "vue": "^3.5.26"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.7.3",
+    "@crxjs/vite-plugin": "^2.3.0",
+    "@types/chrome": "^0.1.32",
+    "@types/node": "^25.0.3",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.39.2",
+    "eslint-plugin-format": "^1.1.0",
+    "gulp": "^5.0.0",
+    "gulp-zip": "^6.0.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vue-tsc": "^3.2.0"
+  }
+}
