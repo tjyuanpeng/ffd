@@ -25,8 +25,8 @@ function hijackXHR() {
               result.rows = result.rows.map((rule) => {
                 for (const fix of fixRules) {
                   if (fix.enable && fix.appName === rule.appName) {
-                    console.log(`[FFD] fix rules applied. [${rule.path}] => [${fix.path}]`)
-                    rule.path = fix.path
+                    console.log(`222[FFD] fix rules applied. [${rule.path}] => [${fix.fixedPath}]`)
+                    rule.path = fix.fixedPath
                     break
                   }
                 }
