@@ -27,7 +27,7 @@ chrome load `./build` folder to launch this programe
 ## zip
 
 ```shell
-pnpm build
+pnpm zip
 ```
 
 output zip pack to `package/` folder

@@ -1,38 +1,47 @@
 import type { Ref } from 'vue'
-import { computed, onMounted, ref, toRaw, watch } from 'vue'
+import { computed, ref, toRaw, watch } from 'vue'
 
-export function useActiveTab(): [Ref<chrome.tabs.Tab | undefined>, (type: string, payload?: any) => Promise<any>] {
-  const activeTab = ref<chrome.tabs.Tab | undefined>()
-  onMounted(async () => {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-    activeTab.value = tabs[0]
-  })
-
-  const sendMessage = (type: string, payload?: any) => {
-    return new Promise<any>((resolve) => {
-      const id = activeTab.value?.id
-      if (!id) {
-        resolve(null)
-        return
-      }
-      chrome.tabs.sendMessage(
-        id,
-        { type, payload },
-        resolve,
-      )
+export function useActiveTab(): { activeTab: Ref<chrome.tabs.Tab | undefined>, sendMessage: (type: string, payload?: any) => Promise<any> } {
+  const activeTab = ref<chrome.tabs.Tab>()
+  const queryActiveTab = (): Promise<chrome.tabs.Tab | undefined> => {
+    if (activeTab.value) {
+      return Promise.resolve(activeTab.value)
+    }
+    return new Promise((resolve) => {
+      chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+        activeTab.value = tabs[0]
+        resolve(activeTab.value)
+      })
     })
   }
-  return [activeTab, sendMessage]
+  queryActiveTab()
+
+  const sendMessage = async (type: string, payload?: any) => {
+    return new Promise<any>((resolve, reject) => {
+      queryActiveTab().then((tab) => {
+        if (!tab) {
+          reject(new Error('No active tab found'))
+          return
+        }
+        chrome.tabs.sendMessage(
+          tab.id!,
+          { type, payload },
+          resolve,
+        )
+      })
+    })
+  }
+  return { activeTab, sendMessage }
 }
 
 export function useOrigin() {
-  const [activeTab] = useActiveTab()
+  const { activeTab } = useActiveTab()
   return computed(() => {
     return activeTab.value && activeTab.value.url ? new URL(activeTab.value.url).origin : null
   })
 }
 
-export function useStorageItem(): [Ref<StorageItem | undefined>, () => Promise<void>, (data: any) => Promise<void>] {
+export function useStorageItem(): { storageItem: Ref<StorageItem | undefined>, save: (data: any) => Promise<void> } {
   const origin = useOrigin()
   const storageItem = ref()
 
@@ -58,5 +67,5 @@ export function useStorageItem(): [Ref<StorageItem | undefined>, () => Promise<v
     })
   }
 
-  return [storageItem, load, save]
+  return { storageItem, save }
 }

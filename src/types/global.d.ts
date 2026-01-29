@@ -5,11 +5,21 @@ interface Storage {
   [key: string]: StorageItem
 }
 
+interface TokenInfo {
+  username: string
+  password: string
+  env: string
+  url: string
+}
+
 interface StorageItem {
-  enable: boolean
+  enable?: boolean
   originRules?: MenuItem[]
   fixRules?: MenuItem[]
   host?: string
+  popupActiveTab?: string
+  loginForm?: TokenInfo
+  tokenInfos?: TokenInfo[]
 }
 
 interface MenuItem {

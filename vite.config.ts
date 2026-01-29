@@ -20,7 +20,7 @@ export default defineConfig(() => {
     plugins: [
       crx({ manifest }),
       Components({
-        dts: './src/components.d.ts',
+        dts: './src/types/components.d.ts',
         resolvers: [
           AntDesignVueResolver({
             importStyle: 'less', // 推荐使用Less

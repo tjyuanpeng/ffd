@@ -21,9 +21,14 @@ async function getMenuItems(): Promise<MenuItem[]> {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'RELOAD_ORIGIN_RULES') {
     getMenuItems().then(sendResponse)
-  }
-  else if (message.type === 'RELOAD_PAGE') {
+  } else if (message.type === 'RELOAD_PAGE') {
     setInjectScriptConfig().then(() => setTimeout(() => window.location.reload())).then(sendResponse)
+  } else if (message.type === 'GET_TOKEN') {
+    const token = localStorage.getItem('token')
+    sendResponse({ token })
+  } else if (message.type === 'SET_TOKEN') {
+    localStorage.setItem('token', message.payload)
+    sendResponse()
   }
   return true
 })
@@ -56,14 +61,12 @@ async function fixCurrentMenuItem(storageItem: StorageItem) {
     }
     if (found.enable && storageItem.enable) {
       cmi.path = found.fixedPath
-    }
-    else {
+    } else {
       cmi.path = found.path
     }
     localStorage.setItem('CURRENT_MENU_ITEM', JSON.stringify(cmi))
-  }
   // eslint-disable-next-line unused-imports/no-unused-vars
-  catch (_e) {
+  } catch (_e) {
   }
 }
 
@@ -73,12 +76,10 @@ async function setInjectScriptConfig() {
     sessionStorage.setItem('__FFD__ENABLE__', '1')
     if (storageItem.fixRules && storageItem.fixRules.length) {
       sessionStorage.setItem('__FFD__FIXRULES__', JSON.stringify(storageItem.fixRules))
-    }
-    else {
+    } else {
       sessionStorage.removeItem('__FFD__FIXRULES__')
     }
-  }
-  else {
+  } else {
     sessionStorage.removeItem('__FFD__ENABLE__')
     sessionStorage.removeItem('__FFD__FIXRULES__')
   }
