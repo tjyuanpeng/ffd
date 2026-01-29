@@ -125,7 +125,8 @@ const login = async () => {
       }
       saveTokenInfo()
       await store.sendMessage('SET_TOKEN', data.rows.token)
-      refreshToken()
+      await refreshToken()
+      await store.sendMessage('RELOAD_PAGE')
     } else {
       result.value = {
         success: false,
