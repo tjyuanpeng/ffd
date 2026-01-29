@@ -9,15 +9,20 @@ export const useStore = defineStore('popup', () => {
   const sendMessage = (type: string, payload?: any) => new Promise<any>((resolve) => {
     chrome.tabs.sendMessage(activeTab.value!.id!, { type, payload }, resolve)
   })
+  const loadOriginRules = async () => {
+    const oRules = await sendMessage('RELOAD_ORIGIN_RULES')
+    storageItem.value.originRules = oRules
+  }
 
   let waitInitialized: any = null
-  let initialized: any = null
+  let resolve: any = null
+  const initialized = ref<boolean>(false)
   const init = async () => {
     await waitInitialized
-    if (initialized) {
+    if (initialized.value) {
       return
     }
-    waitInitialized ??= new Promise(r => initialized = r)
+    waitInitialized ??= new Promise(r => resolve = r)
     const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!currentTab || !currentTab.url) {
       throw new Error('No active tab found')
@@ -27,14 +32,14 @@ export const useStore = defineStore('popup', () => {
     const s: Storage = await chrome.storage.sync.get([origin.value])
     storageItem.value = s[origin.value] ?? {}
 
-    watch(() => storageItem.value.enable, v => !v && sendMessage('RELOAD_PAGE'))
     watch(storageItem, (v: any) => {
       chrome.storage.sync.set({
         [origin.value]: JSON.parse(JSON.stringify(toRaw(v))),
       })
     }, { deep: true })
 
-    initialized()
+    initialized.value = true
+    resolve()
   }
 
   async function clearAllData() {
@@ -45,10 +50,12 @@ export const useStore = defineStore('popup', () => {
   }
 
   return {
+    initialized,
     init,
     origin,
     sendMessage,
     storageItem,
+    loadOriginRules,
     clearAllData,
   }
 })

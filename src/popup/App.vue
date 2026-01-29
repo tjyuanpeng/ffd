@@ -11,22 +11,20 @@ onMounted(store.init)
 
 <template>
   <a-tabs v-model:active-key="store.storageItem.popupActiveTab" type="card">
-    <a-tab-pane v-if="store.storageItem.enable" key="inject" tab="子应用配置">
+    <a-tab-pane key="inject" tab="子应用配置">
       <Inject />
     </a-tab-pane>
-    <a-tab-pane v-if="store.storageItem.enable" key="token" tab="Token">
+    <a-tab-pane key="token" tab="Token">
       <Token />
     </a-tab-pane>
     <template #rightExtra>
       <a-tooltip title="清除当前网站所有数据" placement="left">
-        <a-button v-if="store.storageItem.enable" type="text" @click="store.clearAllData">
+        <a-button type="text" style="margin-right: 20px;" @click="store.clearAllData">
           <template #icon>
             <ClearOutlined />
           </template>
         </a-button>
       </a-tooltip>
-      <span v-if="!store.storageItem.enable">对当前网站启用: </span>
-      <a-switch v-model:checked="store.storageItem.enable" style="margin-left: 12px; margin-right: 12px;" />
     </template>
   </a-tabs>
 </template>

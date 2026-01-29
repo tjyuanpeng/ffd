@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import { ReloadOutlined } from '@ant-design/icons-vue'
 import { Form } from 'ant-design-vue'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useStore } from './store'
 
 const useForm = Form.useForm
 const store = useStore()
 
-const originRules = ref<MenuItem[]>()
 const loadOriginRules = async () => {
   const oRules = await store.sendMessage('RELOAD_ORIGIN_RULES')
-  console.log('# loadOriginRules', oRules)
   store.storageItem.originRules = oRules
 }
-onMounted(async () => {
-  await store.init()
-  await loadOriginRules()
-})
 
-const fixRules = ref<MenuItem[]>()
+const handleEnableChange = async (v: any) => {
+  if (v) {
+    await loadOriginRules()
+  }
+  store.sendMessage('RELOAD_PAGE')
+}
+
 const form = ref<MenuItem[]>([])
 const rules = reactive<any>({})
 const { validateInfos: vis } = useForm(form, rules, {
@@ -39,11 +39,11 @@ const { validateInfos: vis } = useForm(form, rules, {
 watch(() => store.storageItem, (si) => {
   Object.keys(rules).forEach(name => delete rules[name])
   form.value = []
-  originRules.value = si.originRules ?? []
-  fixRules.value = si.fixRules ?? []
-  for (let i = 0; i < originRules.value.length; i++) {
-    const o = originRules.value[i]!
-    const found = fixRules.value.find(i => i.appName === o.appName)
+  const originRules = si.originRules ?? []
+  const fixRules = si.fixRules ?? []
+  for (let i = 0; i < originRules.length; i++) {
+    const o = originRules[i]!
+    const found = fixRules.find(i => i.appName === o.appName)
     form.value.push({
       appName: o.appName,
       title: o.title,
@@ -60,18 +60,20 @@ watch(() => store.storageItem, (si) => {
 <template>
   <a-card>
     <div class="toolbar">
-      <a-button type="text" @click="loadOriginRules">
+      <a-button v-if="store.storageItem.enable" type="text" @click="store.loadOriginRules">
         <template #icon>
           <ReloadOutlined />
         </template>
         加载原始规则
       </a-button>
+      <span style="margin-left: auto">对当前网站启用:</span>
+      <a-switch v-model:checked="store.storageItem.enable" style="margin-left: 1em;" @click="handleEnableChange" />
     </div>
-    <a-form class="form" :label-col="{ span: 4 }">
+    <a-form v-if="store.storageItem.enable" class="form" :label-col="{ span: 4 }">
       <a-form-item v-for="(item, index) in form" :key="item.appName" :label="item.title" v-bind="vis[`${index}.fixedPath`]">
         <a-input v-model:value.lazy="item.fixedPath" :placeholder="item.path" />
         <a-form-item-rest v-bind="vis[`${index}.enable`]">
-          <a-switch v-model:checked.lazy="item.enable" size="small" />
+          <a-switch v-model:checked="item.enable" size="small" />
         </a-form-item-rest>
       </a-form-item>
     </a-form>
@@ -85,6 +87,7 @@ watch(() => store.storageItem, (si) => {
   align-items: center;
   padding: 0 0 10px;
   margin-top: -14px;
+  line-height: 32px;
 }
 
 .form {

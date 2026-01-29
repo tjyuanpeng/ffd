@@ -3,6 +3,24 @@ import { Form } from 'ant-design-vue'
 import { computed, onMounted, ref, toRaw, watch } from 'vue'
 import { useStore } from './store'
 
+const encrypt = (text: string) => {
+  if (!text) {
+    return text
+  }
+  return btoa(encodeURIComponent(text)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+}
+const decrypt = (text: string) => {
+  if (!text) {
+    return text
+  }
+  let base64Str = text.replace(/-/g, '+').replace(/_/g, '/')
+  const padLen = 4 - (base64Str.length % 4)
+  if (padLen !== 4) {
+    base64Str += '='.repeat(padLen)
+  }
+  return decodeURIComponent(atob(text))
+}
+
 const useForm = Form.useForm
 const store = useStore()
 
@@ -48,6 +66,10 @@ const loginForm = ref<any>({
   username: store.storageItem?.loginForm?.username,
   password: store.storageItem?.loginForm?.password,
 })
+const pwdField = computed({
+  get: () => decrypt(loginForm.value.password),
+  set: async (v: string) => loginForm.value.password = encrypt(v),
+})
 watch(loginForm, (value) => {
   store.storageItem.loginForm = toRaw(value)
 }, { deep: true })
@@ -92,11 +114,10 @@ const login = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: loginForm.value.username,
-        password: loginForm.value.password,
+        password: decrypt(loginForm.value.password),
       }),
     })
     const data = await response.json()
-    console.log(data)
     if (data.code === 200) {
       result.value = {
         success: true,
@@ -136,7 +157,7 @@ const login = async () => {
         />
       </a-form-item>
       <a-form-item label="密码" v-bind="vis.password">
-        <a-input-password v-model:value.lazy="loginForm.password" placeholder="请输入密码" />
+        <a-input-password v-model:value.lazy="pwdField" placeholder="请输入密码" />
       </a-form-item>
       <a-form-item label="Url" v-bind="vis.url">
         <a-segmented v-model:value.lazy="loginForm.env" :options="envOptions" style="margin-bottom: 4px;" />
