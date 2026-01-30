@@ -10,7 +10,7 @@ onMounted(store.init)
 </script>
 
 <template>
-  <a-tabs v-model:active-key="store.storageItem.popupActiveTab" type="card">
+  <a-tabs v-if="store.initialized" v-model:active-key="store.storage.popupActiveTab" type="card">
     <a-tab-pane key="inject" tab="子应用配置">
       <Inject />
     </a-tab-pane>
@@ -18,7 +18,7 @@ onMounted(store.init)
       <Token />
     </a-tab-pane>
     <template #rightExtra>
-      <a-tooltip title="清除当前网站所有数据" placement="left">
+      <a-tooltip title="清除扩展以及当前网站所有数据" placement="left">
         <a-button type="text" style="margin-right: 20px;" @click="store.clearAllData">
           <template #icon>
             <ClearOutlined />

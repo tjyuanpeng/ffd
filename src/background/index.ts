@@ -6,12 +6,12 @@ async function updateTabIcon(tabId?: number, url?: string) {
   }
   const origin = new URL(url).origin
   const storage: Storage = await chrome.storage.sync.get([origin])
-  const storageItem: StorageItem = storage[origin]
-  if (!storageItem) {
+  const originStorage: OriginStorage = storage[origin]
+  if (!originStorage) {
     return
   }
   await chrome.action.setIcon({
-    path: storageItem.enable ? { 32: 'img/active.png' } : { 32: 'img/inactive.png' },
+    path: originStorage.enable ? { 32: 'img/active.png' } : { 32: 'img/inactive.png' },
     tabId,
   })
 }

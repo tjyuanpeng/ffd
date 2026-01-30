@@ -2,6 +2,11 @@
 
 Falconix Frontend Developer Toolkit
 
+## screen shot
+
+![inject](./docs/img/inject.jpg)
+![token](./docs/img/token.jpg)
+
 # how to contribute
 
 ## install

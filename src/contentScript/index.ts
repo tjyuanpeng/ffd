@@ -1,4 +1,4 @@
-async function getStorageItem(): Promise<StorageItem> {
+async function getStorageItem(): Promise<OriginStorage> {
   const storage: Storage = await chrome.storage.sync.get([window.location.origin])
   return storage[window.location.origin]
 }
@@ -11,9 +11,8 @@ async function getMenuItems(): Promise<MenuItem[]> {
       headers: { authorization: localStorage.getItem('token') ?? '' },
     }).then(r => r.json())
     return result.code === 200 ? result.rows : []
-  }
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  catch (_e) {
+    // eslint-disable-next-line unused-imports/no-unused-vars
+  } catch (_e) {
     return []
   }
 }
@@ -49,7 +48,7 @@ window.addEventListener('message', (e) => {
   }
 })
 
-async function fixCurrentMenuItem(storageItem: StorageItem) {
+async function fixCurrentMenuItem(storageItem: OriginStorage) {
   try {
     if (!('CURRENT_MENU_ITEM' in localStorage)) {
       return

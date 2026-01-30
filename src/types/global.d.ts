@@ -1,8 +1,19 @@
 /// <reference types="vite/client" />
 /// <reference types="@types/chrome" />
 
-interface Storage {
-  [key: string]: StorageItem
+type Storage = BaseStorage & OriginStorage
+
+interface BaseStorage {
+  popupActiveTab?: string
+  loginForm?: TokenInfo
+  tokenInfos?: TokenInfo[]
+}
+
+interface OriginStorage {
+  enable?: boolean
+  originRules?: MenuItem[]
+  fixRules?: MenuItem[]
+  host?: string
 }
 
 interface TokenInfo {
@@ -10,16 +21,6 @@ interface TokenInfo {
   password: string
   env: string
   url: string
-}
-
-interface StorageItem {
-  enable?: boolean
-  originRules?: MenuItem[]
-  fixRules?: MenuItem[]
-  host?: string
-  popupActiveTab?: string
-  loginForm?: TokenInfo
-  tokenInfos?: TokenInfo[]
 }
 
 interface MenuItem {

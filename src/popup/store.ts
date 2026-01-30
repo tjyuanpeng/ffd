@@ -1,45 +1,48 @@
 import { defineStore } from 'pinia'
-import { ref, toRaw, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 export const useStore = defineStore('popup', () => {
   const activeTab = ref<chrome.tabs.Tab>()
   const origin = ref()
-  const storageItem = ref<StorageItem>({})
+  const originStorage = ref<OriginStorage>({})
+  const storage = ref<BaseStorage>({})
 
   const sendMessage = (type: string, payload?: any) => new Promise<any>((resolve) => {
     chrome.tabs.sendMessage(activeTab.value!.id!, { type, payload }, resolve)
   })
-  const loadOriginRules = async () => {
-    const oRules = await sendMessage('RELOAD_ORIGIN_RULES')
-    storageItem.value.originRules = oRules
-  }
 
-  let waitInitialized: any = null
-  let resolve: any = null
-  const initialized = ref<boolean>(false)
+  let waitInitialized: Promise<boolean>
+  let setInitialized: (r: boolean) => void
+  const initialized = ref(false)
   const init = async () => {
-    await waitInitialized
-    if (initialized.value) {
+    if (await waitInitialized) {
       return
     }
-    waitInitialized ??= new Promise(r => resolve = r)
+    waitInitialized = new Promise(r => setInitialized = r)
     const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true })
     if (!currentTab || !currentTab.url) {
       throw new Error('No active tab found')
     }
     activeTab.value = currentTab
     origin.value = new URL(currentTab.url).origin
-    const s: Storage = await chrome.storage.sync.get([origin.value])
-    storageItem.value = s[origin.value] ?? {}
 
-    watch(storageItem, (v: any) => {
+    const s = await chrome.storage.sync.get<Storage>()
+    const { [origin.value]: os, ...others } = s ?? {}
+    originStorage.value = os ?? {}
+    storage.value = others ?? {}
+
+    watch(originStorage, (v: OriginStorage) => {
       chrome.storage.sync.set({
-        [origin.value]: JSON.parse(JSON.stringify(toRaw(v))),
+        [origin.value]: JSON.parse(JSON.stringify(v)),
       })
     }, { deep: true })
 
+    watch(storage, (v: BaseStorage) => {
+      chrome.storage.sync.set(JSON.parse(JSON.stringify(v)))
+    }, { deep: true })
+
+    setInitialized(true)
     initialized.value = true
-    resolve()
   }
 
   async function clearAllData() {
@@ -50,19 +53,12 @@ export const useStore = defineStore('popup', () => {
   }
 
   return {
-    initialized,
     init,
+    initialized,
     origin,
     sendMessage,
-    storageItem,
-    loadOriginRules,
+    storage,
+    originStorage,
     clearAllData,
   }
 })
-
-/**
- * 基础版防抖函数
- * @param {Function} func - 要防抖的目标函数
- * @param {number} wait - 延迟执行的时间，单位ms
- * @returns {Function} 防抖后的包装函数
- */

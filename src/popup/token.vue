@@ -61,35 +61,35 @@ const envOptions = [
   },
 ]
 const loginForm = ref<any>({
-  env: store.storageItem?.loginForm?.env ?? envOptions[0]!.value,
-  url: store.storageItem?.loginForm?.url,
-  username: store.storageItem?.loginForm?.username,
-  password: store.storageItem?.loginForm?.password,
+  env: store.storage?.loginForm?.env ?? envOptions[0]!.value,
+  url: store.storage?.loginForm?.url,
+  username: store.storage?.loginForm?.username,
+  password: store.storage?.loginForm?.password,
 })
 const pwdField = computed({
   get: () => decrypt(loginForm.value.password),
   set: async (v: string) => loginForm.value.password = encrypt(v),
 })
 watch(loginForm, (value) => {
-  store.storageItem.loginForm = toRaw(value)
+  store.storage.loginForm = toRaw(value)
 }, { deep: true })
 watch(() => loginForm.value.env, (value: any) => {
   loginForm.value.url = envOptions.find(i => i.value === value)?.url ?? loginForm.value.url
 }, { immediate: true })
 
-const tokenInfoOptions = computed(() => store.storageItem.tokenInfos?.map(i => ({
+const tokenInfoOptions = computed(() => store.storage.tokenInfos?.map(i => ({
   ...i,
   label: `${i.username} (${i.env})`,
   value: i.username + Math.random().toString(36).slice(2),
 })))
 const saveTokenInfo = () => {
-  store.storageItem.tokenInfos ??= []
-  const index = store.storageItem.tokenInfos
+  store.storage.tokenInfos ??= []
+  const index = store.storage.tokenInfos
     .findIndex(i => i.username === loginForm.value.username && i.env === loginForm.value.env)
   if (index > -1) {
-    Object.assign(store.storageItem.tokenInfos[index]!, { ...loginForm.value })
+    Object.assign(store.storage.tokenInfos[index]!, { ...loginForm.value })
   } else {
-    store.storageItem.tokenInfos.push({ ...loginForm.value })
+    store.storage.tokenInfos.push({ ...loginForm.value })
   }
 }
 const handleSelect = (_v: any, option: any) => {
@@ -153,7 +153,6 @@ const login = async () => {
           mode="SECRET_COMBOBOX_MODE_DO_NOT_USE"
           placeholder="请输入用户名"
           :options="tokenInfoOptions"
-          :filter-option="(v: any, o: any) => o.label.includes(v)"
           @select="handleSelect"
         />
       </a-form-item>

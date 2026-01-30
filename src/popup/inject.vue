@@ -9,7 +9,7 @@ const store = useStore()
 
 const loadOriginRules = async () => {
   const oRules = await store.sendMessage('RELOAD_ORIGIN_RULES')
-  store.storageItem.originRules = oRules
+  store.originStorage.originRules = oRules
 }
 
 const handleEnableChange = async (v: any) => {
@@ -31,12 +31,12 @@ const { validateInfos: vis } = useForm(form, rules, {
       }
     }
     if (status) {
-      store.storageItem.fixRules = form.value.filter(i => i.fixedPath)
+      store.originStorage.fixRules = form.value.filter(i => i.fixedPath)
       await store.sendMessage('RELOAD_PAGE')
     }
   },
 })
-watch(() => store.storageItem, (si) => {
+watch(() => store.originStorage, (si) => {
   Object.keys(rules).forEach(name => delete rules[name])
   form.value = []
   const originRules = si.originRules ?? []
@@ -60,16 +60,16 @@ watch(() => store.storageItem, (si) => {
 <template>
   <a-card>
     <div class="toolbar">
-      <a-button v-if="store.storageItem.enable" type="text" @click="store.loadOriginRules">
+      <a-button v-if="store.originStorage.enable" type="text" @click="loadOriginRules">
         <template #icon>
           <ReloadOutlined />
         </template>
         加载原始规则
       </a-button>
       <span style="margin-left: auto">对当前网站启用:</span>
-      <a-switch v-model:checked="store.storageItem.enable" style="margin-left: 1em;" @click="handleEnableChange" />
+      <a-switch v-model:checked="store.originStorage.enable" style="margin-left: 1em;" @click="handleEnableChange" />
     </div>
-    <a-form v-if="store.storageItem.enable" class="form" :label-col="{ span: 4 }">
+    <a-form v-if="store.originStorage.enable" class="form" :label-col="{ span: 4 }">
       <a-form-item v-for="(item, index) in form" :key="item.appName" :label="item.title" v-bind="vis[`${index}.fixedPath`]">
         <a-input v-model:value.lazy="item.fixedPath" :placeholder="item.path" />
         <a-form-item-rest v-bind="vis[`${index}.enable`]">
