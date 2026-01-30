@@ -4,8 +4,8 @@ Falconix Frontend Developer Toolkit
 
 ## screen shot
 
-![inject](./docs/img/inject.jpg)
-![token](./docs/img/token.jpg)
+![inject](https://github.com/tjyuanpeng/ffd/blob/main/docs/img/inject.jpeg)
+![token](https://github.com/tjyuanpeng/ffd/blob/main/docs/img/token.jpeg)
 
 # how to contribute
 
