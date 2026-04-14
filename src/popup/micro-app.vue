@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ReloadOutlined } from '@ant-design/icons-vue'
 import { Form } from 'ant-design-vue'
-import { reactive, ref, watch } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useStore } from './store'
 
 const useForm = Form.useForm
@@ -55,6 +55,25 @@ watch(() => store.originStorage, (si) => {
     rules[`${i}.enable`] = [{ required: true, message: '必填项目' }]
   }
 }, { immediate: true, deep: true })
+
+const regexIsMicroApp = /\/_?web(\/(\w+))?/
+const getIdByUrl = (str: string): string => {
+  const pathname = new URL(str, location.origin).pathname
+  const match = pathname.match(regexIsMicroApp)
+  return match?.[2] ?? ''
+}
+const whitelist = reactive<Record<string, boolean>>({})
+let stop: any
+onMounted(async () => {
+  const wl = await store.sendMessage('GET_MICRO_APP_WHITELIST')
+  Object.assign(whitelist, wl)
+
+  stop = watch(whitelist, () => {
+    store.sendMessage('SET_MICRO_APP_WHITELIST', whitelist)
+    store.sendMessage('RELOAD_PAGE')
+  }, { deep: true })
+})
+onUnmounted(() => stop?.())
 </script>
 
 <template>
@@ -74,6 +93,9 @@ watch(() => store.originStorage, (si) => {
         <a-input v-model:value.lazy="item.fixedPath" :placeholder="item.path" />
         <a-form-item-rest v-bind="vis[`${index}.enable`]">
           <a-switch v-model:checked="item.enable" size="small" />
+          <a-checkable-tag :checked="whitelist[getIdByUrl(item.path)]" class="new-flag" @update:checked="(v) => { whitelist[getIdByUrl(item.path)] = v }">
+            新
+          </a-checkable-tag>
         </a-form-item-rest>
       </a-form-item>
     </a-form>
@@ -97,6 +119,17 @@ watch(() => store.originStorage, (si) => {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+}
+.new-flag {
+  padding: 0 4px;
+  margin: 0;
+  color: #ccc;
+  cursor: pointer;
+
+  &.ant-tag-checkable-checked {
+    color: #fff;
+    font-weight: 500;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ClearOutlined } from '@ant-design/icons-vue'
 import { onMounted } from 'vue'
-import Inject from './inject.vue'
+import MicroApp from './micro-app.vue'
 import { useStore } from './store'
 import Token from './token.vue'
 
@@ -11,8 +11,8 @@ onMounted(store.init)
 
 <template>
   <a-tabs v-if="store.initialized" v-model:active-key="store.storage.popupActiveTab" type="card">
-    <a-tab-pane key="inject" tab="子应用配置">
-      <Inject />
+    <a-tab-pane key="micro-app" tab="Micro App">
+      <MicroApp />
     </a-tab-pane>
     <a-tab-pane key="token" tab="Token">
       <Token />

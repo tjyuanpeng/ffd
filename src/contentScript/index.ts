@@ -28,6 +28,24 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   } else if (message.type === 'SET_TOKEN') {
     localStorage.setItem('token', message.payload)
     sendResponse()
+  } else if (message.type === 'GET_MICRO_APP_WHITELIST') {
+    try {
+      const json = sessionStorage.getItem('micro-app-whitelist')
+      const wl = JSON.parse(json ?? '{}')
+      sendResponse(wl)
+      // eslint-disable-next-line unused-imports/no-unused-vars
+    } catch (_e) {
+      sendResponse({})
+    }
+  } else if (message.type === 'SET_MICRO_APP_WHITELIST') {
+    try {
+      const json = JSON.stringify(message.payload)
+      sessionStorage.setItem('micro-app-whitelist', json)
+      // eslint-disable-next-line unused-imports/no-unused-vars
+    } catch (_e) {
+    } finally {
+      sendResponse()
+    }
   }
   return true
 })
